@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Sun'iy intellekt asosidagi professional EKG tahlil tizimi. OpenSignals fayllarini o'qing va tahlil qiling.">
+    <meta name="keywords" content="EKG, ECG, Bitalino, OpenSignals, Yurak, Tahlil, Tibbiyot, AI">
+    <meta name="author" content="CardioLab AI">
+    <title>CardioLab - Professional EKG Tahlili</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Yuklash animatsiyasi */
+        .pulse-ring {
+            content: '';
+            width: 100px;
+            height: 100px;
+            border: 5px solid #3b82f6;
+            border-radius: 50%;
+            position: absolute;
+            animation: pulsate 2s ease-out infinite;
+            opacity: 0;
+        }
+        
+        @keyframes pulsate {
+            0% { transform: scale(0.1, 0.1); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: scale(1.2, 1.2); opacity: 0; }
+        }
+
+        /* EKG Setkasi (Millimetrovka qog'ozi effekti) */
+        .ecg-grid {
+            background-size: 40px 40px, 10px 10px;
+            background-image: 
+                linear-gradient(to right, rgba(239, 68, 68, 0.15) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(239, 68, 68, 0.15) 1px, transparent 1px),
+                linear-gradient(to right, rgba(239, 68, 68, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(239, 68, 68, 0.05) 1px, transparent 1px);
+            background-color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Scan chizig'i animatsiyasi */
+        .scan-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #ef4444;
+            box-shadow: 0 0 10px #ef4444;
+            animation: scan 4s linear infinite;
+            z-index: 10;
+            display: none; /* JS orqali yoqiladi */
+        }
+
+        @keyframes scan {
+            0% { left: 0; }
+            100% { left: 100%; }
+        }
+
+        /* Slider dizayni */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #cbd5e1;
+            border-radius: 2px;
+        }
+
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-in forwards;
+            opacity: 0;
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <nav class="bg-white shadow-sm border-b border-slate-100 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <div class="bg-red-500 text-white p-2 rounded-lg">
+                        <i class="fa-solid fa-heart-pulse text-xl"></i>
+                    </div>
+                    <span class="font-bold text-xl text-slate-800 tracking-tight">Cardio<span class="text-blue-600">Lab</span></span>
+                </div>
+                <div class="hidden md:flex items-center space-x-4">
+                    <span class="text-sm text-slate-500"><i class="fa-regular fa-circle-check text-green-500 mr-1"></i> </span>
+                    <a href="#" class="text-slate-600 hover:text-blue-600 transition"><i class="fa-brands fa-github text-xl"></i></a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main id="uploadView" class="max-w-4xl mx-auto px-4 py-12 sm:px-6 lg:px-8 flex flex-col items-center justify-center min-h-[80vh] fade-in">
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-slate-900 sm:text-5xl mb-4">
+                EKG Tahlili: <span class="text-blue-600">Oddiy & Aniqlik</span>
+            </h1>
+            <p class="text-lg text-slate-600 max-w-2xl mx-auto">
+                BITalino yoki OpenSignals ma'lumotlarini yuklang. Sun'iy intellekt yurak ritmini tahlil qilib, shifokorlar tushunadigan tilda hisobot beradi.
+            </p>
+        </div>
+
+        <div class="w-full max-w-xl relative group">
+            <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-400 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+            <div class="relative bg-white rounded-xl shadow-xl p-8 border border-slate-100">
+                <div class="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-xl p-10 hover:border-blue-500 hover:bg-blue-50 transition-all cursor-pointer" id="dropZone">
+                    <div class="relative flex items-center justify-center w-20 h-20 mb-4 bg-blue-100 rounded-full text-blue-600">
+                        <div class="pulse-ring"></div>
+                        <i class="fa-solid fa-cloud-arrow-up text-3xl"></i>
+                    </div>
+                    <p class="text-lg font-semibold text-slate-700">Faylni tanlang yoki shu yerga tashlang</p>
+                    <p class="text-sm text-slate-400 mt-2">Format: .txt (OpenSignals)</p>
+                    <input type="file" id="fileInput" accept=".txt" class="hidden">
+                    <button class="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-medium shadow-lg shadow-blue-500/30 transition-all">
+                        Fayl Tanlash
+                    </button>
+                </div>
+                <div id="loader" class="hidden mt-6 text-center">
+                    <div class="inline-flex items-center gap-2 text-blue-600 font-semibold">
+                        <i class="fa-solid fa-circle-notch fa-spin"></i>
+                        <span>Ma'lumotlar qayta ishlanmoqda...</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">Shovqinlar tozalanmoqda • R-cho'qqilar aniqlanmoqda</p>
+                </div>
+                <p id="errorMsg" class="hidden mt-4 text-red-500 text-center text-sm bg-red-50 p-2 rounded"></p>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 w-full max-w-4xl text-center">
+            <div class="p-4">
+                <div class="w-12 h-12 bg-green-100 text-green-600 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <i class="fa-solid fa-wand-magic-sparkles text-xl"></i>
+                </div>
+                <h3 class="font-bold text-slate-800">Avtomatik Tozalash</h3>
+                <p class="text-sm text-slate-500">Signal shovqinlarini (baseline wander) avtomatik yo'qotish.</p>
+            </div>
+            <div class="p-4">
+                <div class="w-12 h-12 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <i class="fa-solid fa-heart-circle-check text-xl"></i>
+                </div>
+                <h3 class="font-bold text-slate-800">Aniq BPM</h3>
+                <p class="text-sm text-slate-500">Moslashuvchan algoritm yordamida aniq yurak urishi hisobi.</p>
+            </div>
+            <div class="p-4">
+                <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <i class="fa-solid fa-mobile-screen text-xl"></i>
+                </div>
+                <h3 class="font-bold text-slate-800">Mobile Friendly</h3>
+                <p class="text-sm text-slate-500">Telefon ekranlarida qulay boshqaruv va zoom funksiyasi.</p>
+            </div>
+        </div>
+    </main>
+
+    <div id="dashboardView" class="hidden min-h-screen pb-12 fade-in">
+        <div class="bg-white border-b border-slate-200 px-4 py-4 sm:px-6 mb-6">
+            <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-file-medical text-blue-500"></i> Tahlil Natijalari
+                    </h2>
+                    <p class="text-sm text-slate-500 mt-1">Bemor: <span id="fileName" class="font-medium text-slate-700">...</span> | Sana: <span id="fileDate">...</span></p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="window.print()" class="bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-medium transition">
+                        <i class="fa-solid fa-print mr-2"></i> Saqlash
+                    </button>
+                    <button onclick="location.reload()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-md shadow-blue-200">
+                        <i class="fa-solid fa-upload mr-2"></i> Yangi Fayl
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 card-hover relative overflow-hidden">
+                    <div class="absolute right-0 top-0 h-full w-1 bg-gradient-to-b from-blue-400 to-blue-600"></div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Yurak Urishi (BPM)</p>
+                    <div class="flex items-end gap-2">
+                        <h3 id="bpmValue" class="text-4xl font-extrabold text-slate-800">--</h3>
+                        <span class="text-sm font-medium text-slate-500 mb-2">zarba/daq</span>
+                    </div>
+                    <div id="bpmIndicator" class="mt-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
+                        Hisoblanmoqda...
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 card-hover relative overflow-hidden">
+                    <div class="absolute right-0 top-0 h-full w-1 bg-gradient-to-b from-purple-400 to-purple-600"></div>
+                    <div class="flex justify-between">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Ritmiylik (HRV)</p>
+                        <span class="text-xs text-slate-400" title="Heart Rate Variability - Stress ko'rsatkichi"><i class="fa-regular fa-circle-question"></i></span>
+                    </div>
+                    <div class="flex items-end gap-2">
+                        <h3 id="hrvValue" class="text-4xl font-extrabold text-slate-800">--</h3>
+                        <span class="text-sm font-medium text-slate-500 mb-2">ms</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-4">Yuqori HRV = Yaxshi moslashuvchanlik</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 card-hover relative overflow-hidden">
+                    <div class="absolute right-0 top-0 h-full w-1 bg-gradient-to-b from-green-400 to-green-600"></div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Yozuv Davomiyligi</p>
+                    <h3 id="durationValue" class="text-3xl font-extrabold text-slate-800 mt-2">--</h3>
+                    <p class="text-xs text-slate-500 mt-4"><i class="fa-solid fa-wave-square mr-1"></i> 1000 Hz chastotada</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 card-hover relative overflow-hidden">
+                    <div class="absolute right-0 top-0 h-full w-1 bg-gradient-to-b from-orange-400 to-orange-600"></div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Dastlabki Xulosa</p>
+                    <h3 id="diagnosisTitle" class="text-lg font-bold text-slate-800 mt-1">Tahlil...</h3>
+                    <p id="diagnosisText" class="text-sm text-slate-500 mt-2 leading-snug">
+                        Ma'lumotlar yuklanishini kuting.
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden mb-8">
+                <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center flex-wrap gap-2">
+                    <h3 class="font-bold text-slate-700 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-red-500"></i> EKG Monitor
+                    </h3>
+                    <div class="flex items-center gap-4 text-sm">
+                         <div class="flex items-center gap-2 bg-white px-3 py-1 rounded-md border border-slate-200 shadow-sm">
+                            <span class="text-slate-500 text-xs">Vaqt:</span>
+                            <span id="timeDisplay" class="font-mono font-bold text-blue-600">0.00s - 5.00s</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative w-full h-[350px] md:h-[450px] ecg-grid">
+                    <div class="scan-line" id="scanLine"></div>
+                    <canvas id="ecgChart"></canvas>
+                </div>
+
+                <div class="p-4 bg-slate-50 border-t border-slate-200">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-xs font-bold text-slate-500 uppercase flex justify-between">
+                            <span>Vaqt bo'yicha harakatlanish (Scroll)</span>
+                            <span class="text-blue-600">Jami: <span id="totalTimeLabel">--</span></span>
+                        </label>
+                        <input type="range" id="timeSlider" min="0" max="100" value="0" step="0.1" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                    <div class="mt-4 flex gap-4 text-xs text-slate-500 justify-center">
+                        <span class="flex items-center gap-1"><div class="w-3 h-3 bg-red-500 rounded-sm"></div> EKG Signali</span>
+                        <span class="flex items-center gap-1"><div class="w-3 h-3 border border-slate-400 rounded-sm bg-white"></div> Grid (1mm)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-100 rounded-xl p-6 mb-12">
+                <h4 class="font-bold text-blue-800 mb-2"><i class="fa-solid fa-circle-info mr-2"></i>Ushbu grafikni qanday o'qish kerak?</h4>
+                <ul class="list-disc list-inside text-sm text-blue-800/80 space-y-1 ml-2">
+                    <li>**P-tishcha:** Yurak bo'lmachalarining qisqarishi (kichik do'mboq).</li>
+                    <li>**QRS kompleksi:** Yurak qorinchalarining kuchli qisqarishi (eng baland cho'qqi). Aynan shu yurak urishini bildiradi.</li>
+                    <li>**T-tishcha:** Yurakning dam olish fazasi.</li>
+                    <li>Agar cho'qqilar orasidagi masofa bir xil bo'lsa, ritm **muntazam** hisoblanadi.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- GLOBAL VARIABLES ---
+        let rawData = [];
+        let processedData = [];
+        let samplingRate = 1000;
+        let chartInstance = null;
+        const windowSeconds = 4; // Ekranda bir vaqtning o'zida necha sekund ko'rinadi
+
+        // --- DOM ELEMENTS ---
+        const fileInput = document.getElementById('fileInput');
+        const dropZone = document.getElementById('dropZone');
+        const uploadView = document.getElementById('uploadView');
+        const dashboardView = document.getElementById('dashboardView');
+        const loader = document.getElementById('loader');
+        const errorMsg = document.getElementById('errorMsg');
+        const timeSlider = document.getElementById('timeSlider');
+        const scanLine = document.getElementById('scanLine');
+
+        // --- EVENT LISTENERS ---
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-blue-500', 'bg-blue-50');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleFile(e.target.files[0]);
+        });
+
+        timeSlider.addEventListener('input', (e) => {
+            updateChartPosition(parseFloat(e.target.value));
+        });
+
+        // --- MAIN LOGIC ---
+
+        function handleFile(file) {
+            // UI Update
+            document.querySelector('.fa-cloud-arrow-up').classList.replace('fa-cloud-arrow-up', 'fa-check');
+            dropZone.style.pointerEvents = 'none';
+            loader.classList.remove('hidden');
+            errorMsg.classList.add('hidden');
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setTimeout(() => { // Sun'iy kechikish (UX uchun)
+                    try {
+                        processSignal(e.target.result, file.name);
+                        switchView();
+                    } catch (err) {
+                        console.error(err);
+                        showError("Fayl noto'g'ri formatda. Iltimos, asl OpenSignals .txt faylini yuklang.");
+                    }
+                }, 1500);
+            };
+            reader.readAsText(file);
+        }
+
+        function showError(msg) {
+            loader.classList.add('hidden');
+            errorMsg.innerText = msg;
+            errorMsg.classList.remove('hidden');
+            dropZone.style.pointerEvents = 'auto';
+            document.querySelector('.fa-check').classList.replace('fa-check', 'fa-cloud-arrow-up');
+        }
+
+        function switchView() {
+            uploadView.style.display = 'none';
+            dashboardView.classList.remove('hidden');
+            scanLine.style.display = 'block'; // Animatsiyani yoqish
+            
+            // Initial Chart Render
+            initChart();
+        }
+
+        function processSignal(text, filename) {
+            const lines = text.split('\n');
+            rawData = [];
+            let headerEnded = false;
+            let dateVal = "Noma'lum";
+
+            // 1. Parsing
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+
+                if (line.includes('"sampling rate":')) {
+                    try {
+                        const jsonPart = JSON.parse(line.substring(line.indexOf('{')));
+                        const key = Object.keys(jsonPart)[0];
+                        if (jsonPart[key]["sampling rate"]) samplingRate = jsonPart[key]["sampling rate"];
+                        if (jsonPart[key]["date"]) dateVal = jsonPart[key]["date"];
+                    } catch (e) {}
+                }
+
+                if (line.includes('EndOfHeader')) {
+                    headerEnded = true;
+                    continue;
+                }
+
+                if (headerEnded) {
+                    const parts = line.split('\t');
+                    if (parts.length > 5) {
+                        // A2 ustuni (index 5)
+                        const val = parseInt(parts[5]);
+                        if (!isNaN(val)) rawData.push(val);
+                    }
+                }
+            }
+
+            if (rawData.length < 100) throw new Error("Ma'lumotlar yetarli emas");
+
+            // 2. Signal Processing (DSP)
+            // Baseline removal (oddiy usul: o'rtacha qiymatni ayirish)
+            const mean = rawData.reduce((a,b)=>a+b,0) / rawData.length;
+            processedData = rawData.map(v => v - mean);
+
+            // 3. Analysis
+            analyzeHeartRate();
+
+            // 4. UI Data Fill
+            document.getElementById('fileName').innerText = filename;
+            document.getElementById('fileDate').innerText = dateVal;
+            const duration = (rawData.length / samplingRate).toFixed(1);
+            document.getElementById('durationValue').innerText = duration + " s";
+            document.getElementById('totalTimeLabel').innerText = duration + " sekund";
+            
+            // Slider sozlamalari
+            timeSlider.max = duration - windowSeconds;
+        }
+
+        function analyzeHeartRate() {
+            // R-cho'qqilarni aniqlash (Adaptive Threshold)
+            let peaks = [];
+            const minDistance = samplingRate * 0.4; // Min 240ms oralig'i (fiziologik limit)
+            let maxVal = Math.max(...processedData.slice(0, 5000)); // Dastlabki 5 sek max
+            let threshold = maxVal * 0.6; // 60% balandlikdan yuqori
+            
+            let lastPeakIdx = -minDistance;
+
+            for(let i = 1; i < processedData.length - 1; i++) {
+                const val = processedData[i];
+                // Mahalliy maksimum va thresholddan baland
+                if (val > threshold && val > processedData[i-1] && val > processedData[i+1]) {
+                    if (i - lastPeakIdx > minDistance) {
+                        peaks.push(i);
+                        lastPeakIdx = i;
+                    }
+                }
+            }
+
+            // BPM Calculation
+            const durationMin = (rawData.length / samplingRate) / 60;
+            const bpm = Math.round(peaks.length / durationMin);
+            
+            // HRV Calculation (RMSSD - Root Mean Square of Successive Differences)
+            // RR oraliqlarini millisekundda hisoblash
+            let rrIntervals = [];
+            for (let i = 1; i < peaks.length; i++) {
+                let diff = (peaks[i] - peaks[i-1]) / samplingRate * 1000;
+                rrIntervals.push(diff);
+            }
+            
+            let sumSquares = 0;
+            for (let i = 1; i < rrIntervals.length; i++) {
+                let diff = rrIntervals[i] - rrIntervals[i-1];
+                sumSquares += diff * diff;
+            }
+            let hrv = Math.round(Math.sqrt(sumSquares / (rrIntervals.length - 1)));
+
+            // Update UI
+            document.getElementById('bpmValue').innerText = (bpm > 30 && bpm < 220) ? bpm : "--";
+            document.getElementById('hrvValue').innerText = isNaN(hrv) ? "--" : hrv;
+
+            // Tashxis mantiqi
+            const diagnosisTitle = document.getElementById('diagnosisTitle');
+            const diagnosisText = document.getElementById('diagnosisText');
+            const bpmInd = document.getElementById('bpmIndicator');
+
+            if (bpm >= 60 && bpm <= 100) {
+                diagnosisTitle.innerText = "Normal Sinus Ritmi";
+                diagnosisText.innerText = "Yurak urish tezligi me'yorida. Signal muntazam ko'rinishga ega.";
+                bpmInd.className = "mt-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800";
+                bpmInd.innerHTML = "<span class='w-2 h-2 mr-1 bg-green-500 rounded-full'></span> Normal";
+            } else if (bpm > 100) {
+                diagnosisTitle.innerText = "Sinusli Taxikardiya";
+                diagnosisText.innerText = "Yurak urishi tezlashgan (>100). Bu stress, jismoniy zo'riqish yoki kofein ta'siri bo'lishi mumkin.";
+                bpmInd.className = "mt-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800";
+                bpmInd.innerHTML = "<span class='w-2 h-2 mr-1 bg-red-500 rounded-full'></span> Tez";
+            } else {
+                diagnosisTitle.innerText = "Sinusli Bradikardiya";
+                diagnosisText.innerText = "Yurak urishi sekinlashgan (<60). Sportchilarda yoki uyqu paytida bu normal holat bo'lishi mumkin.";
+                bpmInd.className = "mt-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800";
+                bpmInd.innerHTML = "<span class='w-2 h-2 mr-1 bg-yellow-500 rounded-full'></span> Sekin";
+            }
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('ecgChart').getContext('2d');
+            
+            // Dastlabki oynani sozlash (0 dan windowSeconds gacha)
+            const initialData = getDataWindow(0);
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: initialData.labels,
+                    datasets: [{
+                        label: 'EKG (mV)',
+                        data: initialData.data,
+                        borderColor: '#ef4444',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0.2, // Biroz yumshatish
+                        borderJoinStyle: 'round'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false, // Scroll paytida tez ishlashi uchun animatsiyani o'chiramiz
+                    interaction: {
+                        intersect: false,
+                        mode: 'index',
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { family: 'Plus Jakarta Sans' },
+                            bodyFont: { family: 'Plus Jakarta Sans' },
+                            callbacks: {
+                                title: (ctx) => `Vaqt: ${ctx[0].label}`,
+                                label: (ctx) => `Kuchlanish: ${ctx.parsed.y.toFixed(0)}`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: false, // Setka CSS da chizilgan
+                        },
+                        y: {
+                            display: false,
+                            min: Math.min(...processedData) * 1.1,
+                            max: Math.max(...processedData) * 1.1
+                        }
+                    }
+                }
+            });
+        }
+
+        function getDataWindow(startTime) {
+            const startIdx = Math.floor(startTime * samplingRate);
+            const endIdx = startIdx + (windowSeconds * samplingRate);
+            
+            const slice = processedData.slice(startIdx, endIdx);
+            
+            // Labels generatsiyasi
+            const labels = [];
+            for(let i=0; i<slice.length; i+=5) { // Optimization: har 5-nuqtaga label (baribir hidden)
+                labels.push(((startIdx + i)/samplingRate).toFixed(2) + 's');
+            }
+            
+            // Ma'lumotlarni kamaytirish (Downsampling) - Grafika qotmasligi uchun
+            // Har 2 ta nuqtadan 1 tasini olamiz (agar 1000Hz bo'lsa)
+            const downsampled = slice.filter((_, i) => i % 2 === 0);
+            const downsampledLabels = slice.map((_, i) => ((startIdx + i)/samplingRate).toFixed(2) + 's').filter((_, i) => i % 2 === 0);
+
+            return {
+                data: downsampled,
+                labels: downsampledLabels
+            };
+        }
+
+        function updateChartPosition(startTime) {
+            if (!chartInstance) return;
+            
+            const windowData = getDataWindow(startTime);
+            
+            chartInstance.data.labels = windowData.labels;
+            chartInstance.data.datasets[0].data = windowData.data;
+            chartInstance.update('none'); // Animatsiyasiz yangilash
+
+            // Labelni yangilash
+            document.getElementById('timeDisplay').innerText = `${startTime.toFixed(2)}s - ${(startTime + windowSeconds).toFixed(2)}s`;
+        }
+    </script>
+</body>
+</html>
