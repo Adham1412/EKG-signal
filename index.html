@@ -182,7 +182,7 @@
                                 }
                             "
                             class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition font-medium">
-                        </div>
+                    </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Hozirgi Holatingiz qanday</label>
                         <select id="patientState" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition bg-white font-medium">
@@ -238,14 +238,8 @@
                     <i class="fa-solid fa-mobile-screen text-xl"></i>
                 </div>
                 <h3 class="font-bold text-slate-800">Mobile Friendly</h3>
-                <p class="text-sm text-slate-500"></p>
+                <p class="text-sm text-slate-500">Telefonlarda qo'llab-quvvatlanadi</p>
             </div>
-            <div class="fixed bottom-0 left-0 w-full bg-red-100 border-t-4 border-red-700 rounded-t-xl p-4 flex items-center justify-center shadow-lg z-50 animate-pulse">
-                    <i class="fa-solid fa-circle-info mr-2 text-red-700 text-xl"></i>
-                    <h3 class="font-extrabold text-red-700 mb-0 text-center text-lg">
-                        Diqqat! Bu dastur Adham Ochilov tomonidan ishlab chiqilgan va faqatgina o'quv mashg'ulotlari uchun mo'ljallangan!!!
-                    </h3>
-                </div>
         </div>
     </main>
 
@@ -274,7 +268,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 card-hover relative overflow-hidden">
                     <div class="absolute right-0 top-0 h-full w-1 bg-gradient-to-b from-blue-400 to-blue-600"></div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Yurak Urishi (BPM-Yurak urishi soni)</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Yurak Urishi (BPM)</p>
                     <div class="flex items-end gap-2">
                         <h3 id="bpmValue" class="text-4xl font-extrabold text-slate-800">--</h3>
                         <span class="text-sm font-medium text-slate-500 mb-2">zarba/daq</span>
@@ -339,7 +333,7 @@
             <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden mb-8">
                 <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center flex-wrap gap-2">
                     <h3 class="font-bold text-slate-700 flex items-center gap-2">
-                        <i class="fa-solid fa-heart-pulse text-red-500"></i> Filtrlangan ECG (Tozalangan)
+                        <i class="fa-solid fa-heart-pulse text-red-500"></i> Filtrlangan ECG (Jonli Efir)
                     </h3>
                     <div class="flex items-center gap-4 text-sm">
                          <div class="flex items-center gap-2 bg-white px-3 py-1 rounded-md border border-slate-200 shadow-sm">
@@ -357,7 +351,7 @@
                 <div class="p-4 bg-slate-50 border-t border-slate-200">
                     <div class="flex flex-col gap-2">
                         <label class="text-xs font-bold text-slate-500 uppercase flex justify-between">
-                            <span>Ikkala grafikni vaqt bo'yicha surish (Scroll)</span>
+                            <span>Ikkala grafikni vaqt bo'yicha surish (Slayder)</span>
                             <span class="text-blue-600">Jami Yozuv: <span id="totalTimeLabel">--</span> s</span>
                         </label>
                         <input type="range" id="timeSlider" min="0" max="100" value="0" step="0.1" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
@@ -368,27 +362,22 @@
             <div class="bg-blue-50 border border-blue-100 rounded-xl p-6 mb-12">
                 <h4 class="font-bold text-blue-800 mb-2"><i class="fa-solid fa-circle-info mr-2"></i>Ushbu grafikni qanday o'qish kerak?</h4>
                 <ul class="list-disc list-inside text-sm text-blue-800/80 space-y-1 ml-2">
-                    <li>Ikkala grafik ham paneldagi surish orqali birgalikda boshqariladi. [+] va [-] orqali yaqinlashtiring.</li>
+                    <li>Grafiklar avtomatik ravishda jonli efirdek harakatlanadi. O'zingiz ham slayder orqali boshqarishingiz mumkin.</li>
                     <li>Xom grafikda tana harakati sababli chiziq tepa-pastga suzishi mumkin.</li>
                     <li>Filtrlangan grafikda ushbu shovqinlar tekislanib, aniq ECG to'lqinlari nol chizig'ida ko'rsatiladi.</li>
                 </ul>
             </div>
         </div>
-                <div class="fixed bottom-0 left-0 w-full bg-red-100 border-t-4 border-red-700 rounded-t-xl p-4 flex items-center justify-center shadow-lg z-50 animate-pulse">
-                    <i class="fa-solid fa-circle-info mr-2 text-red-700 text-xl"></i>
-                    <h4 class="font-extrabold text-red-700 mb-0 text-center text-lg">
-                        Diqqat! Bu dastur Adham Ochilov tomonidan ishlab chiqilgan va faqatgina o'quv mashg'ulotlari uchun mo'ljallangan!!!
-                    </h4>
-                </div>
+    </div>
+
+    <div class="fixed bottom-2 left-0 w-full flex items-center justify-center px-3 z-50 pointer-events-none">
+        <p class="font-extrabold text-red-600 text-[10px] sm:text-xs md:text-sm text-center drop-shadow-md animate-pulse">
+            <i class="fa-solid fa-circle-info mr-1 text-xs sm:text-sm"></i>
+            Diqqat! Bu dastur Adham Ochilov tomonidan ishlab chiqilgan va faqatgina o'quv mashg'ulotlari uchun mo'ljallangan!!!
+        </p>
     </div>
 
     <script>
-        // ==========================================
-        // SOZLAMALAR: API KALITNI SHU YERGA YOZING
-        // ==========================================
-        const GEMINI_API_KEY = "AIzaSyA5x8KsthwB2b8Zxx9RK62KeEjivZv4Wl4"; 
-        // ==========================================
-
         let rawData = [];
         let filteredData = [];
         let samplingRate = 1000;
@@ -417,23 +406,29 @@
             if (!DOM.age.value) return showError("Iltimos, avval bemor yoshini kiriting!");
             DOM.fileInput.click();
         });
+        
         DOM.dropZone.addEventListener('dragover', (e) => { e.preventDefault(); DOM.dropZone.classList.add('bg-blue-50', 'border-blue-500'); });
         DOM.dropZone.addEventListener('dragleave', () => DOM.dropZone.classList.remove('bg-blue-50', 'border-blue-500'));
         DOM.dropZone.addEventListener('drop', (e) => {
-            e.preventDefault(); DOM.dropZone.classList.remove('bg-blue-50', 'border-blue-500');
+            e.preventDefault(); 
+            DOM.dropZone.classList.remove('bg-blue-50', 'border-blue-500');
             if (!DOM.age.value) return showError("Iltimos, avval bemor yoshini kiriting!");
             if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
         });
+        
         DOM.fileInput.addEventListener('change', (e) => {
             if (e.target.files.length) handleFile(e.target.files[0]);
         });
+        
         DOM.timeSlider.addEventListener('input', (e) => {
             updateChartsPosition(parseFloat(e.target.value));
         });
+        
         // Hozirgi holatni tanlaganda darhol yangilash
         DOM.state.addEventListener('change', () => {
             document.getElementById('infoState').innerText = DOM.state.options[DOM.state.selectedIndex].text;
         });
+
         // --- ZOOM FUNKSIYALARI ---
         window.zoomIn = function() {
             windowSeconds = Math.max(MIN_WINDOW, windowSeconds * 0.7);
@@ -480,7 +475,12 @@
             DOM.errorMsg.innerText = msg;
             DOM.errorMsg.classList.remove('hidden');
             DOM.dropZone.style.pointerEvents = 'auto';
-            document.querySelector('.fa-check').classList.replace('fa-check', 'fa-cloud-arrow-up');
+            
+            // Xatolik to'g'rilandi: Pptichka belgisi topilmasa JS xato bermaydi
+            let checkIcon = document.querySelector('.fa-check');
+            if (checkIcon) {
+                checkIcon.classList.replace('fa-check', 'fa-cloud-arrow-up');
+            }
         }
 
         function parseTextData(text) {
@@ -582,6 +582,9 @@
             // UI ni to'ldirish
             DOM.uploadView.style.display = 'none';
             DOM.dashboardView.classList.remove('hidden');
+            
+            // QIZIL CHIZIQNI (SCAN LINE) YOQISH
+            document.getElementById('scanLine').style.display = 'block';
 
             document.getElementById('infoAge').innerText = DOM.age.value;
             document.getElementById('infoState').innerText = DOM.state.options[DOM.state.selectedIndex].text;
@@ -592,54 +595,53 @@
             document.getElementById('totalTimeLabel').innerText = T_Seconds.toFixed(1);
 
             // BPM holati indikatori (YOSHGA QARAB)
-                const bpmInd = document.getElementById('bpmIndicator');
-                const age = parseInt(DOM.age.value);
+            const bpmInd = document.getElementById('bpmIndicator');
+            const age = parseInt(DOM.age.value);
 
-                let minNormal = 60;
-                let maxNormal = 100;
+            let minNormal = 60;
+            let maxNormal = 100;
 
-                // Yoshga qarab normal diapazon
-                if (age >= 1 && age <= 2) {
-                    minNormal = 98;
-                    maxNormal = 140;
-                } else if (age >= 3 && age <= 5) {
-                    minNormal = 80;
-                    maxNormal = 120;
-                } else if (age >= 6 && age <= 7) {
-                    minNormal = 75;
-                    maxNormal = 115;
-                } else if (age >= 8 && age <= 10) {
-                    minNormal = 70;
-                    maxNormal = 110;
-                } else if (age >= 11 && age <= 17) {
-                    minNormal = 60;
-                    maxNormal = 100;
-                } else if (age >= 18 && age <= 60) {
-                    minNormal = 60;
-                    maxNormal = 100;
-                } else if (age > 60) {
-                    minNormal = 60;
-                    maxNormal = 100;
-                }
+            if (age >= 1 && age <= 2) { minNormal = 98; maxNormal = 140; }
+            else if (age >= 3 && age <= 5) { minNormal = 80; maxNormal = 120; }
+            else if (age >= 6 && age <= 7) { minNormal = 75; maxNormal = 115; }
+            else if (age >= 8 && age <= 10) { minNormal = 70; maxNormal = 110; }
+            else if (age >= 11 && age <= 17) { minNormal = 60; maxNormal = 100; }
+            else if (age >= 18 && age <= 60) { minNormal = 60; maxNormal = 100; }
+            else if (age > 60) { minNormal = 60; maxNormal = 100; }
 
-                // Holatni aniqlash
-                if (BPM >= minNormal && BPM <= maxNormal) {
-                    bpmInd.className = "mt-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800";
-                    bpmInd.innerHTML = `<span class='w-2 h-2 mr-1 bg-green-500 rounded-full'></span> Normal (${minNormal}-${maxNormal})`;
-                } 
-                else if (BPM > maxNormal) {
-                    bpmInd.className = "mt-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800";
-                    bpmInd.innerHTML = `<span class='w-2 h-2 mr-1 bg-red-500 rounded-full'></span> Yurak tez urmoqda (${maxNormal} dan yuqori)`;
-                } 
-                else {
-                    bpmInd.className = "mt-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800";
-                    bpmInd.innerHTML = `<span class='w-2 h-2 mr-1 bg-yellow-500 rounded-full'></span> Juda sekin (${minNormal} dan past)`;
-                }
+            if (BPM >= minNormal && BPM <= maxNormal) {
+                bpmInd.className = "mt-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800";
+                bpmInd.innerHTML = `<span class='w-2 h-2 mr-1 bg-green-500 rounded-full'></span> Normal (${minNormal}-${maxNormal})`;
+            } 
+            else if (BPM > maxNormal) {
+                bpmInd.className = "mt-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800";
+                bpmInd.innerHTML = `<span class='w-2 h-2 mr-1 bg-red-500 rounded-full'></span> Yurak tez urmoqda (${maxNormal} dan yuqori)`;
+            } 
+            else {
+                bpmInd.className = "mt-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800";
+                bpmInd.innerHTML = `<span class='w-2 h-2 mr-1 bg-yellow-500 rounded-full'></span> Juda sekin (${minNormal} dan past)`;
+            }
+            
             // Slayder va Grafik
             DOM.timeSlider.max = Math.max(0, T_Seconds - windowSeconds);
             DOM.timeSlider.value = 0;
             initCharts();
             
+            // --- JONLI GRAFIK (AVTO-SCROLL) QO'SHILDI ---
+            if(window.autoScrollTimer) clearInterval(window.autoScrollTimer);
+            window.autoScrollTimer = setInterval(() => {
+                let currentVal = parseFloat(DOM.timeSlider.value);
+                let maxVal = parseFloat(DOM.timeSlider.max);
+                
+                if (currentVal < maxVal) {
+                    DOM.timeSlider.value = currentVal + 0.05; 
+                } else {
+                    DOM.timeSlider.value = 0; 
+                }
+                updateChartsPosition(parseFloat(DOM.timeSlider.value));
+            }, 50); 
+            // -------------------------------------------
+
             // AI
             askAI(N, T_Seconds.toFixed(1), BPM);
         }
@@ -671,7 +673,7 @@
             const commonOptions = {
                 responsive: true, maintainAspectRatio: false, animation: false,
                 plugins: { legend: { display: false } },
-                scales: { x: { display: false }, y: { display: false } } // Y o'qi erkin, shuning uchun farq yaqqol ko'rinadi
+                scales: { x: { display: false }, y: { display: false } }
             };
 
             rawChartInst = new Chart(ctxRaw, {
@@ -712,53 +714,56 @@
             document.getElementById('timeDisplayFiltered').innerText = timeText;
         }
 
-        // --- AI API ---
-        async function askAI(N, T, BPM) {
-            if (GEMINI_API_KEY === "SHU_YERGA_API_KEY_YOZING" || !GEMINI_API_KEY) {
-                document.getElementById('diagnosisText').innerHTML = "<span class='text-red-500 font-bold'>Dasturchi diqqatiga:</span> API Kalit kiritilmagan.";
-                return;
-            }
+        // --- OFFLINE AI (Algoritmik Tahlil) ---
+        function askAI(N, T, BPM) {
+            document.getElementById('diagnosisText').innerHTML = "<i class='fa-solid fa-spinner fa-spin text-blue-500'></i> AI maslahati...";
 
-            const age = DOM.age.value;
-            const state = DOM.state.options[DOM.state.selectedIndex].text;
+            setTimeout(() => {
+                const age = parseInt(DOM.age.value);
+                const state = DOM.state.options[DOM.state.selectedIndex].text;
 
-            // Xato gapirmasligi uchun QAT'IY prompt:
-            const prompt = `Siz kardiologsiz. Bemorning aniq yoshi: ${age} yosh. Holati: ${state}. ECG tahlilida ${T} soniyada ${N} ta zarba aniqlandi.
-    
-                QAT'IY VAZIFA:
-                1. Javobni quyidagi formula bilan boshlang: "BPM = (${N} / ${T}) x 60 = ${BPM}"
-                2. Bemorning yoshi ${age} da ekanligini qat'iy hisobga oling. HECH QACHON bemor yoshiga mos kelmaydigan toifa (masalan, yoshi katta odam bo'lsa "yosh bolalarda" yoki yosh bola bo'lsa "kattalarda") haqida gapirmang!
-                3. ${age} yosh uchun normal yurak urish me'yorlari:
-                - 1-2 yosh: 98-140
-                - 3-5 yosh: 80-120
-                - 6-7 yosh: 75-115
-                - 8-10 yosh: 70-110
-                - 11-17 yosh: 60-100
-                - 18-60 yosh: 60-100 (jismoniy mashq qilsa 100-110 ham normal)
-                - 60+ yosh: 60-100
-                4. Faqatgina kiritilgan yosh (${age}) uchun ${BPM} bpm qanday holat ekanligini (Normal, Tezlashgan yoki Sekinlashgan) 1 gapda tushuntiring.
-                5. Yakunida bemor holatiga mos 1 ta qisqa, aniq tibbiy maslahat bering.
-                ILTIMOS: Markdown belgilari (*, #, /) umuman ishlatmang. Qisqa yozing. O'zingizni AI demang. Boshqa yosh toifalari haqida umuman yozmang.`;
+                let minNormal = 60;
+                let maxNormal = 100;
 
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                });
+                if (age >= 1 && age <= 2) { minNormal = 98; maxNormal = 140; }
+                else if (age >= 3 && age <= 5) { minNormal = 80; maxNormal = 120; }
+                else if (age >= 6 && age <= 7) { minNormal = 75; maxNormal = 115; }
+                else if (age >= 8 && age <= 10) { minNormal = 70; maxNormal = 110; }
+                else if (age >= 11 && age <= 17) { minNormal = 60; maxNormal = 100; }
+                else if (age >= 18 && age <= 60) { 
+                    minNormal = 60; 
+                    maxNormal = state.includes("Mashq") ? 110 : 100; 
+                }
+                else if (age > 60) { minNormal = 60; maxNormal = 100; }
 
-                if (!response.ok) throw new Error();
+                let statusText = "";
+                let advice = "";
 
-                const data = await response.json();
-                let cleanText = data.candidates[0].content.parts[0].text;
-                cleanText = cleanText.replace(/[\*#_`\-]/g, '');
+                if (BPM >= minNormal && BPM <= maxNormal) {
+                    statusText = `${age} yoshli bemor uchun ${BPM} bpm - bu normal ko'rsatkich.`;
+                    advice = "Yurak urishingiz me'yorda. Sog'lom turmush tarzini davom ettiring va vaqtida dam oling.";
+                } else if (BPM > maxNormal) {
+                    statusText = `${age} yoshli bemor uchun ${BPM} bpm - bu me'yordan tez (Taxikardiya belgisi bo'lishi mumkin).`;
+                    advice = "Yurak urishingiz tezlashgan. Agar bu holat tinch paytda ham tez-tez kuzatilsa, kardiolog ko'rigidan o'tishingizni tavsiya qilamiz.";
+                } else {
+                    statusText = `${age} yoshli bemor uchun ${BPM} bpm - bu me'yordan past (Bradikardiya belgisi bo'lishi mumkin).`;
+                    advice = "Yurak urishingiz sekinlashgan. Professional sportchi bo'lmasangiz va o'zingizni holsiz his qilsangiz, shifokor bilan maslahatlashing.";
+                }
 
-                document.getElementById('diagnosisText').innerHTML = `<div class="space-y-2">${cleanText.split('\n').filter(l=>l.trim()).map(l=>`<p>${l}</p>`).join('')}</div>`;
-            } catch (error) {
-                document.getElementById('diagnosisText').innerText = "Tarmoqda xatolik yoki API kaliti noto'g'ri kiritilgan.";
-            }
+                const responseHTML = `
+                    <div class="space-y-2 text-slate-700">
+                        <p>BPM = (${N} / ${T}) x 60 = <strong>${BPM}</strong></p>
+                        <p>${statusText} (Holat: ${state})</p>
+                        <p class="mt-2 text-blue-700 bg-blue-50 p-2 rounded border border-blue-100">
+                            <i class="fa-solid fa-user-doctor mr-1"></i> <strong>Tavsiya:</strong> ${advice}
+                        </p>
+                    </div>
+                `;
+
+                document.getElementById('diagnosisText').innerHTML = responseHTML;
+            }, 3500); 
         }
+        
     </script>
 </body>
 </html>
-
