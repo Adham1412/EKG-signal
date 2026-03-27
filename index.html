@@ -151,11 +151,11 @@
             </p>
         </div>
 
-        <div class="w-full max-w-xl relative group">
+        <div class="w-full max-w-2xl relative group">
             <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-400 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
             <div class="relative bg-white rounded-xl shadow-xl p-8 border border-slate-100">
                 
-                <div class="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-slate-100">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 pb-6 border-b border-slate-100">
                     <div>
                         <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Bemor Yoshi</label>
                         <input 
@@ -184,12 +184,20 @@
                             class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition font-medium">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Hozirgi Holatingiz qanday</label>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Holatingiz</label>
                         <select id="patientState" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition bg-white font-medium">
-                            <option value="Tinch holatda">Tinch holatda (o'tirgan/yotib)</option>
-                            <option value="Jismoniy mashqdan so'ng">Yugurish/Mashqdan so'ng</option>
+                            <option value="Tinch holatda">Tinch (o'tirgan/yotib)</option>
+                            <option value="Jismoniy mashqdan so'ng">Mashqdan so'ng</option>
                             <option value="Uyqudan uyg'ongan">Uyqudan uyg'ongan</option>
-                            <option value="Stress/hayajon holatida">Stress/hayajon holatida</option>
+                            <option value="Stress/hayajon holatida">Stress holatida</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Signal Turi</label>
+                        <select id="signalType" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition bg-white font-medium text-slate-700">
+                            <option value="AUTO">🤖 Avtomatik</option>
+                            <option value="ECG">❤️ ECG (Yurak)</option>
+                            <option value="EMG">💪 EMG (Mushak)</option>
                         </select>
                     </div>
                 </div>
@@ -269,7 +277,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 card-hover relative overflow-hidden">
                     <div class="absolute right-0 top-0 h-full w-1 bg-gradient-to-b from-blue-400 to-blue-600"></div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1" id="card1Title">Yurak Urishi (BPM-Yurak urishi soni)</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1" id="card1Title">Yurak Urishi (BPM)</p>
                     <div class="flex items-end gap-2">
                         <h3 id="bpmValue" class="text-4xl font-extrabold text-slate-800">--</h3>
                         <span class="text-sm font-medium text-slate-500 mb-2" id="card1Unit">zarba/daq</span>
@@ -394,6 +402,7 @@
         const DOM = {
             age: document.getElementById('patientAge'),
             state: document.getElementById('patientState'),
+            signalType: document.getElementById('signalType'),
             fileInput: document.getElementById('fileInput'),
             dropZone: document.getElementById('dropZone'),
             uploadView: document.getElementById('uploadView'),
@@ -442,7 +451,7 @@
             updateChartsPosition(parseFloat(DOM.timeSlider.value));
         }
 
-        // --- FAYL TURI ANIQLASH (EKG YOKI EMG) ---
+        // --- MUKAMMALLASHTIRILGAN FAYL TURI ANIQLASH (EKG YOKI EMG) ---
         function parseTextDataAndDetect(text) {
             const lines = text.split(/\r?\n/);
             const data = [];
@@ -474,15 +483,40 @@
 
             let finalData = new Float32Array(data);
 
+            // YANGI AI ALGORTIMI: Crest Factor (Cho'qqi omili) + ZCR birlashmasi
             if (detectedType === "UNKNOWN" && finalData.length > 500) {
+                let sum = 0;
+                for (let i = 0; i < finalData.length; i++) sum += finalData[i];
+                let mean = sum / finalData.length;
+
                 let zcr = 0;
-                let mean = finalData.reduce((a,b)=>a+b,0) / finalData.length;
-                for(let i=1; i<finalData.length; i++) {
-                    if ((finalData[i] - mean) * (finalData[i-1] - mean) < 0) zcr++;
+                let sumSq = 0;
+                let maxAbs = 0;
+
+                for (let i = 0; i < finalData.length; i++) {
+                    let centered = finalData[i] - mean;
+                    sumSq += centered * centered;
+
+                    let absVal = Math.abs(centered);
+                    if (absVal > maxAbs) maxAbs = absVal;
+
+                    if (i > 0) {
+                        let prevCentered = finalData[i - 1] - mean;
+                        if (centered * prevCentered < 0) zcr++;
+                    }
                 }
+
+                let rms = Math.sqrt(sumSq / finalData.length);
+                let crestFactor = rms === 0 ? 0 : (maxAbs / rms);
                 let zcrRate = zcr / finalData.length;
-                if (zcrRate > 0.05) detectedType = "EMG"; 
-                else detectedType = "ECG"; 
+
+                // ECG odatda aniq cho'qqilarga ega bo'ladi (CrestFactor baland, ZCR past)
+                // EMG esa kuchli shovqinga o'xshaydi (CrestFactor pastroq, ZCR baland)
+                if (zcrRate > 0.08 || (crestFactor < 4.0 && zcrRate > 0.04)) {
+                    detectedType = "EMG"; 
+                } else {
+                    detectedType = "ECG"; 
+                }
             }
 
             return { finalData, detectedType };
@@ -501,7 +535,11 @@
                         const { finalData, detectedType } = parseTextDataAndDetect(e.target.result);
                         if (finalData.length < 500) throw new Error("Faylda to'g'ri ma'lumotlar topilmadi.");
                         
-                        if(detectedType === "EMG") {
+                        // Fikrni qo'lda o'zgartirish tekshiruvi
+                        const manualChoice = DOM.signalType.value;
+                        const finalProcessType = manualChoice !== "AUTO" ? manualChoice : detectedType;
+
+                        if(finalProcessType === "EMG") {
                             processEMGSignal(finalData);
                         } else {
                             processECGSignal(finalData);
